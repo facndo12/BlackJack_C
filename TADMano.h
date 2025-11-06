@@ -1,7 +1,10 @@
+#ifndef TADMANO_H
+#define TADMANO_H
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "carta.h"
+#include "TADCarta.h"
 
 typedef struct nodo {
     tCarta carta;
@@ -158,3 +161,5 @@ void mostrarManoOculta(tMano *pMano) {
         }
     }
 }
+
+#endif

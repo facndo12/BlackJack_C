@@ -1,5 +1,10 @@
+#ifndef TADCARTA_H
+#define TADCARTA_H
+
 #include <stdio.h>
+#include <string.h>
 #include <stdbool.h>
+
 #define MAXCAR 15
 typedef char tString [MAXCAR];
 
@@ -97,3 +102,4 @@ void mostrarCarta(tCarta *pCarta) {
     }
 }
 
+#endif

@@ -1,11 +1,16 @@
+#ifndef TADJUGADOR_H
+#define TADJUGADOR_H
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "TADCarta.h"
 #include "TADMano.h"
+#include "TADMazo.h"
 
 #define MAXNOMBRE 30
+#define ARCHIVOJUGADORES "jugadores.dat"
 
 typedef struct {
     char nombre[MAXNOMBRE];
@@ -22,16 +27,17 @@ typedef struct nodoJugador {
     struct nodoJugador *der;
 } tNodoJugador;
 
-tNodoJugador * tArbolJugadores;
+typedef tNodoJugador * tArbolJugadores;
+
 
 void inicializarArbol(tArbolJugadores *pArbol); // Inicializa el arbol vacio
 void insertarJugador(tArbolJugadores *pArbol, tJugador pJugador); // Inserta un jugador en el arbol
-tNodoJugador* buscarJugador(tArbolJugadores pArbol, char *nombre); // Busca un jugador por nombre
-void eliminarJugador(tArbolJugadores *pArbol, char *nombre); // Elimina un jugador del arbol
-void crearJugador(tJugador *pJugador, char *nombre, int fichas); // Crea un jugador nuevo
+tNodoJugador* buscarJugador(tArbolJugadores pArbol, char *pNombre); // Busca un jugador por nombre
+void eliminarJugador(tArbolJugadores *pArbol, char *pNombre); // Elimina un jugador del arbol
+void crearJugador(tJugador *pJugador, char *pNombre, int pFichas); // Crea un jugador nuevo
 
-void actualizarEstadisticas(tJugador *pJugador, int resultado); // Actualiza estadisticas (1=gano, 0=empate, -1=perdio)
-void modificarFichas(tJugador *pJugador, int cantidad); // Suma o resta fichas
+void actualizarEstadisticas(tJugador *pJugador, int pResultado); // Actualiza estadisticas (1=gano, 0=empate, -1=perdio)
+void modificarFichas(tJugador *pJugador, int pCantidad); // Suma o resta fichas
 void mostrarJugador(tJugador pJugador); // Muestra datos del jugador
 void mostrarArbolInorden(tArbolJugadores pArbol); // Muestra todos los jugadores ordenados
 void mostrarArbolPorNivel(tArbolJugadores pArbol); // Muestra el arbol por niveles
@@ -41,7 +47,6 @@ void guardarJugadoresArchivo(tArbolJugadores pArbol); // Guarda jugadores en arc
 void cargarJugadoresArchivo(tArbolJugadores *pArbol); // Carga jugadores desde archivo
 void generarReporteEstadisticas(tArbolJugadores pArbol); // Genera reporte con cortes de control
 
-FILE * apuntArchivo;
 
 void inicializarArbol(tArbolJugadores *pArbol) {
     if (pArbol == NULL) {
@@ -76,21 +81,21 @@ void insertarJugador(tArbolJugadores *pArbol, tJugador pJugador) {
             printf("\nError: no hay memoria disponible...");
         } else {
             nuevo->jugador = pJugador;
-            nuevo->izquierdo = NULL;
-            nuevo->derecho = NULL;
+            nuevo->izq = NULL;
+            nuevo->der = NULL;
             *pArbol = nuevo;
         }
     } else {
         comparacion = strcmp(pJugador.nombre, (*pArbol)->jugador.nombre);
         if (comparacion < 0) {
-            insertarJugador(&(*pArbol)->izquierdo, pJugador);
+            insertarJugador(&(*pArbol)->izq, pJugador);
         } else if (comparacion > 0) {
-            insertarJugador(&(*pArbol)->derecho, pJugador);
+            insertarJugador(&(*pArbol)->der, pJugador);
         }
     }
 }
 
-tNodoJugador* buscarJugador(tArbolJugadores pArbol, tString *pNombre) {
+tNodoJugador* buscarJugador(tArbolJugadores pArbol, char *pNombre) {
     int comparacion;
     if (pArbol == NULL || pNombre == NULL) {
         return NULL;
@@ -100,50 +105,50 @@ tNodoJugador* buscarJugador(tArbolJugadores pArbol, tString *pNombre) {
     if (comparacion == 0) {
         return pArbol;
     } else if (comparacion < 0) {
-        return buscarJugador(pArbol->izquierdo, pNombre);
+        return buscarJugador(pArbol->izq, pNombre);
     } else {
-        return buscarJugador(pArbol->derecho, pNombre);
+        return buscarJugador(pArbol->der, pNombre);
     }
 }
 
 tNodoJugador* buscarMinimo(tArbolJugadores pArbol) {
     if (pArbol == NULL) {
         return NULL;
-    } else if (pArbol->izquierdo == NULL) {
+    } else if (pArbol->izq == NULL) {
         return pArbol;
     } else {
-        return buscarMinimo(pArbol->izquierdo);
+        return buscarMinimo(pArbol->izq);
     }
 }
 
-void eliminarJugador(tArbolJugadores *pArbol, tString *pNombre) {
+void eliminarJugador(tArbolJugadores *pArbol, char *pNombre) {
     tNodoJugador *temp, *minimo;
     int comparacion;
 
     if (pArbol == NULL || *pArbol == NULL || pNombre == NULL) {
-        printf("\nError: parametros invalidos en ELIMINAR JUGADOR\n")
+        printf("\nError: parametros invalidos en ELIMINAR JUGADOR\n");
     } else {
         comparacion = strcmp(pNombre, (*pArbol)->jugador.nombre);
         if (comparacion < 0) {
-            eliminarJugador(&(*pArbol)->izquierdo, pNombre);
+            eliminarJugador(&(*pArbol)->izq, pNombre);
         } else if (comparacion > 0) {
-            eliminarJugador(&(*pArbol)->derecho, pNombre);
+            eliminarJugador(&(*pArbol)->der, pNombre);
         } else {
-            if ((*pArbol)->izquierdo == NULL && (*pArbol)->derecho == NULL) {
+            if ((*pArbol)->izq == NULL && (*pArbol)->der == NULL) {
                 free(*pArbol);
                 *pArbol = NULL;
-            } else if ((*pArbol)->izquierdo == NULL) {
+            } else if ((*pArbol)->izq == NULL) {
                 temp = *pArbol;
-                *pArbol = (*pArbol)->derecho;
+                *pArbol = (*pArbol)->der;
                 free(temp);
-            } else if ((*pArbol)->derecho == NULL) {
+            } else if ((*pArbol)->der == NULL) {
                 temp = *pArbol;
-                *pArbol = (*pArbol)->izquierdo;
+                *pArbol = (*pArbol)->izq;
                 free(temp);
             } else {
-                minimo = buscarMinimo((*pArbol)->derecho);
+                minimo = buscarMinimo((*pArbol)->der);
                 (*pArbol)->jugador = minimo->jugador;
-                eliminarJugador(&(*pArbol)->derecho, minimo->jugador.nombre);
+                eliminarJugador(&(*pArbol)->der, minimo->jugador.nombre);
             }
         }
     }
@@ -168,7 +173,7 @@ void modificarFichas(tJugador *pJugador, int pCantidad) {
     if (pJugador == NULL) {
         printf("\nError: jugador invalido...");
     } else {
-        pJugador->fichas += cantidad;
+        pJugador->fichas += pCantidad;
         if (pJugador->fichas < 0) {
             pJugador->fichas = 0;
         }
@@ -195,22 +200,22 @@ void mostrarJugador(tJugador pJugador) {
 
 void mostrarArbolInorden(tArbolJugadores pArbol) {
     if (pArbol != NULL) {
-        mostrarArbolInorden(pArbol->izquierdo);
+        mostrarArbolInorden(pArbol->izq);
         mostrarJugador(pArbol->jugador);
-        mostrarArbolInorden(pArbol->derecho);
+        mostrarArbolInorden(pArbol->der);
     }
 }
 
-void mostrarNivel(tArbolJugadores pArbol, int nivel) {
+void mostrarNivel(tArbolJugadores pArbol, int pNivel) {
     if (pArbol == NULL) {
-        printf("\nERROR en MOSTRARNIVEL");
+        return;
+    }
+    
+    if (pNivel == 0) {
+        printf("%s ", pArbol->jugador.nombre);
     } else {
-       if (nivel == 0) {
-            printf("%s ", pArbol->jugador.nombre);
-        } else {
-            mostrarNivel(pArbol->izquierdo, nivel - 1);
-            mostrarNivel(pArbol->derecho, nivel - 1);
-        }
+        mostrarNivel(pArbol->izq, pNivel - 1);
+        mostrarNivel(pArbol->der, pNivel - 1);
     }
 }
 
@@ -220,8 +225,8 @@ int alturaArbol(tArbolJugadores pArbol) {
     if (pArbol == NULL) {
         return 0;
     } else {
-        alturaIzq = alturaArbol(pArbol->izquierdo);
-        alturaDer = alturaArbol(pArbol->derecho);
+        alturaIzq = alturaArbol(pArbol->izq);
+        alturaDer = alturaArbol(pArbol->der);
         return (alturaIzq > alturaDer ? alturaIzq : alturaDer) + 1;
     }
 }
@@ -239,53 +244,55 @@ void mostrarArbolPorNivel(tArbolJugadores pArbol) {
             printf("\n");
         }
         printf("=========================\n");
-        }
+    }
 }
 
 void liberarArbol(tArbolJugadores *pArbol) {
     if (pArbol == NULL || *pArbol == NULL) {
-        printf("\nLIBERANDO ARBOL...");
-    } else {
-        liberarArbol(&(*pArbol)->izquierdo);
-        liberarArbol(&(*pArbol)->derecho);
-        free(*pArbol);
-        *pArbol = NULL;
+        return;
     }
+    liberarArbol(&(*pArbol)->izq);
+    liberarArbol(&(*pArbol)->der);
+    free(*pArbol);
+    *pArbol = NULL;
 }
 
-void guardarArbolArchivo(FILE * pArchivo, tArbolJugadores pArbol) {
+void guardarArbolArchivo(FILE *pArchivo, tArbolJugadores pArbol) {
     if (pArbol != NULL && pArchivo != NULL) {
         fwrite(&pArbol->jugador, sizeof(tJugador), 1, pArchivo);
-        guardarArbolArchivo(pArchivo, pArbol->izquierdo);
-        guardarArbolArchivo(pArchivo, pArbol->derecho);
+        guardarArbolArchivo(pArchivo, pArbol->izq);
+        guardarArbolArchivo(pArchivo, pArbol->der);
     }
 }
 
 void guardarJugadoresArchivo(tArbolJugadores pArbol) {
-    pArchivo = fopen(ARCHIVO_JUGADORES, "wb");
-    if (pArchivo == NULL) {
+    FILE *archivo; 
+    
+    archivo = fopen(ARCHIVOJUGADORES, "wb");
+    if (archivo == NULL) {
         printf("\nError al abrir archivo para guardar...");
     } else {
-        guardarArbolArchivo(pArchivo, pArbol);
-        fclose(pArchivo);
+        guardarArbolArchivo(archivo, pArbol);
+        fclose(archivo);
         printf("\nJugadores guardados exitosamente\n");
     }
 }
 
 void cargarJugadoresArchivo(tArbolJugadores *pArbol) {
+    FILE *archivo; 
     tJugador jugador;
 
     if (pArbol == NULL) {
         printf("\nError: arbol invalido...");
     } else {
-        pArchivo = fopen(ARCHIVOJUGADORES, "rb");
-        if (pArchivo == NULL) {
+        archivo = fopen(ARCHIVOJUGADORES, "rb");
+        if (archivo == NULL) {
             printf("\nNo hay archivo de jugadores previo\n");
         } else {
-            while (fread(&jugador, sizeof(tJugador), 1, pArchivo) == 1) {
+            while (fread(&jugador, sizeof(tJugador), 1, archivo) == 1) {
                 insertarJugador(pArbol, jugador);
             }
-            fclose(pArchivo);
+            fclose(archivo);
             printf("\nJugadores cargados exitosamente\n");
         }
     }
@@ -316,9 +323,7 @@ void procesarNodoReporte(tJugador jugador, int *totalJugadores, int *totalPartid
     printf("\nJugador: %s\n", jugador.nombre);
     printf("  Fichas: %d\n", jugador.fichas);
     printf("  Partidas jugadas: %d\n", jugador.partidasJugadas);
-    printf("  Ganadas: %d | Perdidas: %d | Empatadas: %d\n",
-           jugador.partidasGanadas, jugador.partidasPerdidas,
-           jugador.partidasEmpatadas);
+    printf("  Ganadas: %d | Perdidas: %d | Empatadas: %d\n", jugador.partidasGanadas, jugador.partidasPerdidas, jugador.partidasEmpatadas);
 
     if (jugador.partidasJugadas > 0) {
         porcentaje = (float)jugador.partidasGanadas / jugador.partidasJugadas * 100;
@@ -335,9 +340,9 @@ void procesarNodoReporte(tJugador jugador, int *totalJugadores, int *totalPartid
 
 void generarReporteRecursivo(tArbolJugadores pArbol, int *totalJugadores, int *totalPartidas, int *totalFichas, int *totalGanadas, int *totalPerdidas, int *totalEmpatadas) {
     if (pArbol != NULL) {
-        generarReporteRecursivo(pArbol->izquierdo, totalJugadores, totalPartidas, totalFichas, totalGanadas, totalPerdidas, totalEmpatadas);
+        generarReporteRecursivo(pArbol->izq, totalJugadores, totalPartidas, totalFichas, totalGanadas, totalPerdidas, totalEmpatadas);
         procesarNodoReporte(pArbol->jugador, totalJugadores, totalPartidas, totalFichas, totalGanadas, totalPerdidas, totalEmpatadas);
-        generarReporteRecursivo(pArbol->derecho, totalJugadores, totalPartidas, totalFichas, totalGanadas, totalPerdidas, totalEmpatadas);
+        generarReporteRecursivo(pArbol->der, totalJugadores, totalPartidas, totalFichas, totalGanadas, totalPerdidas, totalEmpatadas);
     }
 }
 
@@ -377,3 +382,4 @@ void generarReporteEstadisticas(tArbolJugadores pArbol) {
     }
 }
 
+#endif

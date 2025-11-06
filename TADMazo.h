@@ -1,3 +1,6 @@
+#ifndef TADMAZO_H
+#define TADMAZO_H
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -108,3 +111,5 @@ void repartirCarta(tMazo *pMazo, tCarta *pCarta) {
         desapilarCarta(pMazo, pCarta);
     }
 }
+
+#endif
