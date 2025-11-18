@@ -17,10 +17,13 @@ typedef struct {
 
 void crearMazo(tMazo *);    // Inicializa el mazo vacío
 void llenarMazo(tMazo *);   // Llena el mazo con las 52 cartas
-void mezclarMazo(tMazo *);  // Mezcla aleatoriamente las cartas
+void mezclarMazo(tMazo *);
+void mezclarMazoProfundo(tMazo *pMazo, int numMezclas);  // Mezcla aleatoriamente las cartas
 bool mazoVacio(tMazo);      // Verifica si el mazo está vacío
 bool mazoLleno(tMazo);      // Verifica si el mazo está lleno
 int cantidadCartas(tMazo);  // Retorna la cantidad actual de cartas
+void reiniciarMazo(tMazo *pMazo);
+void llenarMazosMultiples(tMazo *pMazo, int numMazos);
 
 void apilarCarta(tMazo *, tCarta);      // Apila una carta 
 void desapilarCarta(tMazo *, tCarta *); // Desapila una carta 
@@ -112,4 +115,43 @@ void repartirCarta(tMazo *pMazo, tCarta *pCarta) {
     }
 }
 
+void reiniciarMazo(tMazo *pMazo) {
+    if (pMazo == NULL) {
+        printf("\nError: mazo invalido...");
+    } else {
+        pMazo->tope = 0;
+        llenarMazo(pMazo);
+        mezclarMazo(pMazo);
+    }
+}
+
+void llenarMazosMultiples(tMazo *pMazo, int numMazos) {
+    int i;
+    
+    if (pMazo == NULL) {
+        printf("\nError: mazo invalido...");
+        return;
+    }
+    
+    pMazo->tope = 0;
+    
+    // Llenar múltiples mazos
+    for (i = 0; i < numMazos; i++) {
+        llenarMazo(pMazo);
+    }
+}
+
+void mezclarMazoProfundo(tMazo *pMazo, int numMezclas) {
+    int i;
+    
+    if (pMazo == NULL) {
+        printf("\nError: mazo invalido...");
+        return;
+    }
+    
+    // Mezclar múltiples veces
+    for (i = 0; i < numMezclas; i++) {
+        mezclarMazo(pMazo);
+    }
+}
 #endif
