@@ -1,2 +1,1 @@
-cd /c/Users/facun/OneDrive/Escritorio/facultad/BLACKJACK/BlackJack_C
-gcc main.c recursos.c renderizado.c eventos.c logica.c TADCarta.c TADMazo.c TADMano.c TADJugador.c -o blackjack.exe -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+TENER INSTALADO MINGW64 Y DOBLE CLICK EN JUGAR.bat PARA COMPILAR Y EJECUTAR
